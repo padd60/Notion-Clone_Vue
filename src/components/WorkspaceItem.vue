@@ -2,6 +2,7 @@
   <li>
     <div
       :style="{paddingLeft:`${14 * depth}px`}"
+      :class="{active: parseInt($route.params.id) === workspace.id}"
       class="title"
       @click="$router.push({
         name: 'Workspace',
@@ -12,7 +13,7 @@
       <span
         class="material-icons"
         :class="{active: showChildren}"
-        @click="showChildren = !showChildren">
+        @click.stop="showChildren = !showChildren">
         play_arrow
       </span>
       <span class="text">
@@ -21,12 +22,12 @@
       <div class="actions">
         <span
           class="material-icons"
-          @click="createWorkspace">
+          @click.stop="createWorkspace">
           add
         </span>
         <span
           class="material-icons"
-          @click="deleteWorkspace">
+          @click.stop="deleteWorkspace">
           delete
         </span>
       </div>
@@ -47,6 +48,7 @@
   </li>
 </template>
 <script>
+
 export default {
   props:{
     workspace:{
@@ -67,6 +69,10 @@ export default {
     hasChildren(){
       return this.workspace.documents && this.workspace.documents.length
     }
+  },
+  created(){
+    this.showChildren = this.$store.state.workspace.currentWorkspacePath
+    .some(workspace => workspace.id === this.workspace.id)
   },
   methods:{
     async createWorkspace(){
@@ -91,6 +97,13 @@ li{
     height: 30px;
     padding: 0 14px;
     color: rgba($color-font, .7);
+
+    &.active{
+      .text{
+        font-weight: 700;
+        color: rgba($color-font, .8);
+      }
+    }
 
     &:hover{
       padding-right: 4px;

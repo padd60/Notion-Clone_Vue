@@ -1,9 +1,14 @@
+import router from '~/routes'
+
 export default {
   namespaced: true,
-  state: () => ({
-    workspaces: [],
-    currentWorkspace:{}
-  }),
+  state() {
+    return {
+      workspaces: [],
+      currentWorkspace:{},
+      currentWorkspacePath: []
+    }
+  },
   getters:{},
   mutations:{
     assignState(state, payload){
@@ -15,72 +20,104 @@ export default {
   actions:{
     async createWorkspaces({dispatch}, payload={}){
       const {parentId} = payload
-      await fetch('https:kdt.roto.codes/documents/',{
+      const workspace = await _request({
         method:'POST',
-        headers:{
-          'Content-Type': 'application/json',
-          'x-username': 'padd'
-        },
         body: JSON.stringify({
           title: '',
           parent: parentId
         })
-      }).then(res => res.json())
+      })
+      // console.log(workspace)
       await dispatch('readWorkspaces')
-    },
-    async readWorkspaces({commit}){
-      const workspaces = await fetch('https:kdt.roto.codes/documents/',{
-        method:'GET',
-        headers:{
-          'Content-Type': 'application/json',
-          'x-username': 'padd'
+      router.push({
+        name: 'Workspace',
+        params:{
+          id: workspace.id
         }
-      }).then(res=>res.json())
+      })
+    },
+    async readWorkspaces({commit, dispatch}){
+      const workspaces = await _request({
+        method:'GET',
+      })
       // console.log(workspaces)
       commit('assignState', {
         workspaces: workspaces
       })
+      dispatch('findWorkspacePath')
+      if(!workspaces.length){
+        dispatch('createWorkspaces')
+      }
     },
     async readWorkspace({commit}, payload){
       const {id} = payload
+      try {
+        const workspace = await _request({
+          id,
+          method:'GET',
+        })
 
-      const workspace = await fetch(`https:kdt.roto.codes/documents/${id}`,{
-        method:'GET',
-        headers:{
-          'Content-Type': 'application/json',
-          'x-username': 'padd'
-        }
-      }).then(res => res.json())
-
-      commit('assignState', {
-        currentWorkspace: workspace
-      })
+        commit('assignState', {
+          currentWorkspace: workspace
+        })
+      } catch (error) {
+        router.push('/error')
+      }
     },
-    async updateWorkspaces(context, payload){
+    async updateWorkspaces({dispatch}, payload){
       const {id, title, content} = payload
 
-      await fetch(`https:kdt.roto.codes/documents/${id}`,{
+      await _request({
+        id,
         method:'PUT',
-        headers:{
-          'Content-Type': 'application/json',
-          'x-username': 'padd'
-        },
         body: JSON.stringify({
           title,
           content
         })
-      }).then(res => res.json())
+      })
+      await dispatch('readWorkspaces')
     },
-    async deleteWorkspaces({dispatch}, payload){
+    async deleteWorkspaces({state, dispatch}, payload){
       const {id} = payload
-      await fetch(`https:kdt.roto.codes/documents/${id}`,{
+      await _request({
+        id,
         method:'DELETE',
-        headers:{
-          'Content-Type': 'application/json',
-          'x-username': 'padd'
+      })
+      await dispatch('readWorkspaces')
+      if(id === parseInt(router.currentRoute.value.params.id,10)){
+        router.push({
+          name: 'Workspace',
+          params:{
+            id: state.workspaces[0].id
+          }
+        })
+      }
+    },
+    findWorkspacePath({state, commit}){
+      const currentWorkspaceId = parseInt(router.currentRoute.value.params.id,10)
+      function _find(workspace, parents){
+        if(currentWorkspaceId === workspace.id){
+          commit('assignState', {
+            currentWorkspacePath:[...parents,workspace]
+          })
         }
-      }).then(res => res.json())
-      dispatch('readWorkspaces')
+        if(workspace.documents){
+          // Recursive
+          workspace.documents.forEach(ws=>_find(ws,[...parents, workspace]))
+        }
+      }
+      state.workspaces.forEach(workspace=>_find(workspace, []))
     }
   }
+}
+
+async function _request(options){
+  const { id = '' } = options
+  return await fetch(`https:kdt.roto.codes/documents/${id}`,{
+    ... options,
+    headers:{
+      'Content-Type': 'application/json',
+      'x-username': 'padd'
+    }
+  }).then(res => res.json())
 }

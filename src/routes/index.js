@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Workspace from './Workspace'
+import NotFound from './NotFound'
 
 export default createRouter({
   history: createWebHistory(),
@@ -16,5 +17,9 @@ export default createRouter({
         }
       ]
     },
+    {
+      path:'/:notFound(.*)',
+      component: NotFound
+    }
   ]
 })

@@ -45,7 +45,7 @@ export default {
     }
   },
   created(){
-    this.$store.dispatch('workspace/readWorkspaces')
+    this.workspacesInit()
   },
   mounted(){
     this.navInit()
@@ -62,6 +62,10 @@ export default {
       .on('resizemove', (e)=>{
         this.navWidth = e.rect.width
       })
+    },
+    async workspacesInit(){
+      await this.$store.dispatch('workspace/readWorkspaces')
+      console.log(this.$store.state.workspace.currentWorkspacePath)
     }
   }
 }
