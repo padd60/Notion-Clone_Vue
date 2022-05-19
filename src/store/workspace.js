@@ -113,7 +113,7 @@ export default {
 
 async function _request(options){
   const { id = '' } = options
-  return await fetch(`https:kdt.roto.codes/documents/${id}`,{
+  return await fetch(`https://kdt.roto.codes/documents/${id}`,{
     ... options,
     headers:{
       'Content-Type': 'application/json',
