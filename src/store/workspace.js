@@ -106,18 +106,15 @@ export default {
           workspace.documents.forEach(ws=>_find(ws,[...parents, workspace]))
         }
       }
+      console.log(state.workspaces)
       state.workspaces.forEach(workspace=>_find(workspace, []))
     }
   }
 }
 
 async function _request(options){
-  const { id = '' } = options
-  return await fetch(`https://kdt.roto.codes/documents/${id}`,{
-    ... options,
-    headers:{
-      'Content-Type': 'application/json',
-      'x-username': 'padd'
-    }
-  }).then(res => res.json())
+  return await fetch('/.netlify/functions/workspace',{
+    method: 'POST',
+    body:JSON.stringify(options)
+  }).then(res=>res.json())
 }
