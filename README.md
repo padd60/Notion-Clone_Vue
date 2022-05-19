@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/ea771e36-c950-4630-9842-688c563c3d06/deploy-status)](https://app.netlify.com/sites/gleaming-sawine-13aa65/deploys)
+
 # Vue3 Webpack Template
 
 - Webpack + Babel + PostCSS(SCSS)
